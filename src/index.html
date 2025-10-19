@@ -158,7 +158,7 @@
 
 	<body>
 		<main>
-			<h1>GitHub Project Suggestion</h1>
+			<h1>GitHub Project Suggestions</h1>
 			<form>
 				<input type="text" autofocus name="username" id="username" placeholder="Enter your GitHub username" />
 				<input type="submit" id="submit" value="Get Project Suggestions!" disabled />
@@ -205,27 +205,27 @@
 				if (!res.succes) {
 					alert(res.error);
 					submit.disabled = false;
-					submit.value = 'Roast this user!';
+					submit.value = 'Get Project Suggestions!';
 					username.value = '';
 					result.innerHTML = '';
 					resultWrapper.classList.add('hidden');
 					return;
 				}
 
-				if (!_res.ok || !res.roast) {
+				if (!_res.ok || !res.suggestions) {
 					alert('Something went wrong (probably a GitHub rate limit), please try again');
 					submit.disabled = false;
-					submit.value = 'Roast this user!';
+					submit.value = 'Get Project Suggestions!';
 					username.value = '';
 					result.innerHTML = '';
 					resultWrapper.classList.add('hidden');
 					return;
 				}
 
-				result.innerHTML = res.roast;
+				result.innerHTML = res.suggestions;
 
 				submit.disabled = false;
-				submit.value = 'Roast this user!';
+				submit.value = 'Get Project Suggestions!';
 
 				resultWrapper.classList.add('loaded');
 			});
@@ -239,7 +239,7 @@
 			});
 
 			share.addEventListener('click', () => {
-				const text = `${result.innerHTML.slice(0, 230)}... - GitHub Roaster by github.com/RetrogradeDev`;
+				const text = `${result.innerHTML.slice(0, 230)}... - GitHub Project Suggestions by github.com/RetrogradeDev`;
 				const url = `https://twitter.com/intent/tweet?text=${text}`;
 				window.open(url, '_blank');
 			});

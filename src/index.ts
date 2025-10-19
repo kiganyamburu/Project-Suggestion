@@ -1,7 +1,7 @@
 import HTML from './index.html';
 
 export interface Env {
-	AI: Ai;
+	GEMINI_API_KEY: string;
 }
 
 export default {
@@ -93,47 +93,58 @@ export default {
 
 		let response: any;
 
+		const systemPrompt =
+			"You are an expert project advisor and career mentor specializing in software development. Provide personalized project suggestions based on the user's GitHub profile.";
+
 		try {
-			response = await env.AI.run('@cf/meta/llama-3.1-8b-instruct', {
-				messages: [
-					{
-						role: 'system',
-						content:
-							'You roast people github account based on their bio, name, readme, and repos as harsh and spicy as possible, and directly start without any other text or description.',
+			const geminiResponse = await fetch(
+				`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${env.GEMINI_API_KEY}`,
+				{
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
 					},
-					{ role: 'user', content: prompt },
-				],
-				max_tokens: 500,
-			});
+					body: JSON.stringify({
+						contents: [
+							{
+								parts: [
+									{
+										text: `${systemPrompt}\n\n${prompt}`,
+									},
+								],
+							},
+						],
+						generationConfig: {
+							maxOutputTokens: 500,
+							temperature: 0.7,
+						},
+					}),
+				}
+			);
+
+			if (!geminiResponse.ok) {
+				throw new Error('Gemini API request failed');
+			}
+
+			const geminiData: any = await geminiResponse.json();
+			response = geminiData.candidates[0].content.parts[0].text;
 		} catch (e) {
-			response = await env.AI.run('@cf/meta/llama-3.1-8b-instruct', {
-				messages: [
-					{
-						role: 'system',
-						content:
-							'You roast people github account based on their bio, name, readme, and repos as harsh and spicy as possible, and directly start without any other text or description.',
-					},
-					{ role: 'user', content: prompt },
-				],
-				max_tokens: 500,
-			});
+			return new Response(JSON.stringify({ error: 'Failed to generate suggestions. Please try again.' }), { status: 500 });
 		}
 
-		response = response.response;
-
 		// Markdown bold (**text**) and heading (#text) to <b>text</b>
-		response = response
-			.replace(/(?:^|\n)#\s?([^\n]+)/g, function (match, p1) {
+		let formattedResponse = response
+			.replace(/(?:^|\n)#\s?([^\n]+)/g, function (match: string, p1: string) {
 				return `<b>${p1.trim()}</b>`;
 			})
 			.replace(/\*\*([^\*]+)\*\*/g, '<b>$1</b>');
 
-		response = response.replaceAll('\n', '<br>').replaceAll('<br><br>', '<br>');
+		formattedResponse = formattedResponse.replaceAll('\n', '<br>').replaceAll('<br><br>', '<br>');
 
 		return new Response(
 			JSON.stringify({
 				succes: true,
-				roast: response,
+				suggestions: formattedResponse,
 			})
 		);
 	},
