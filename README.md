@@ -176,4 +176,4 @@ Project Link: [https://github.com/kiganyamburu/Project-Suggestion](https://githu
 
 ---
 
-<p align="center">Made by P.K. Mburu, for developers</p>
+<p align="center">Made by P.K. Mburu</p>
